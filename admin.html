@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gerar Cobrança - Alice VIP</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; }
+        .container { max-width: 500px; width: 100%; }
+        .card { background: #1a1a1a; border-radius: 16px; padding: 24px; border: 1px solid #333; }
+        h1 { color: #FF00FF; text-align: center; margin-bottom: 20px; font-size: 22px; }
+        label { color: #adb5bd; font-size: 14px; display: block; margin-bottom: 6px; }
+        input, select { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 14px; margin-bottom: 16px; }
+        input:focus, select:focus { border-color: #FF00FF; outline: none; }
+
+        .upload-area {
+            border: 2px dashed #333;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+            position: relative;
+        }
+        .upload-area:hover, .upload-area.dragover { border-color: #FF00FF; background: rgba(255,0,255,0.05); }
+        .upload-area .icone { font-size: 40px; margin-bottom: 8px; }
+        .upload-area p { color: #6b7280; font-size: 14px; }
+        .upload-area .sub { color: #6b7280; font-size: 12px; margin-top: 4px; }
+        .upload-area input[type="file"] { display: none; }
+        .preview-container { position: relative; display: none; margin-bottom: 16px; }
+        .preview-container img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; border: 2px solid #FF00FF; }
+        .preview-container .btn-remover { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.8); border: none; border-radius: 50%; width: 32px; height: 32px; color: #ff6b6b; font-size: 18px; cursor: pointer; transition: all 0.3s; }
+        .preview-container .btn-remover:hover { background: #ff6b6b; color: #fff; }
+
+        .btn { background: #FF00FF; border: none; padding: 14px; border-radius: 8px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; width: 100%; transition: all 0.3s; }
+        .btn:hover { opacity: 0.9; transform: scale(1.02); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .resultado { margin-top: 20px; padding: 16px; border-radius: 8px; display: none; }
+        .resultado.sucesso { display: block; background: rgba(74,222,128,0.1); border: 1px solid #4ade80; }
+        .resultado.erro { display: block; background: rgba(255,107,107,0.1); border: 1px solid #ff6b6b; }
+        .resultado .link-cobranca { color: #4ade80; word-break: break-all; font-size: 14px; }
+        .resultado .link-cobranca a { color: #4ade80; text-decoration: underline; }
+        .resultado .pix-info { margin-top: 16px; }
+        .resultado .pix-info img { max-width: 180px; display: block; margin: 10px auto; }
+        .resultado .pix-info textarea { width: 100%; padding: 8px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #adb5bd; font-size: 12px; font-family: monospace; resize: none; }
+        .btn-copiar { background: #FF00FF; border: none; padding: 8px 16px; border-radius: 6px; color: #fff; font-size: 13px; cursor: pointer; margin-top: 8px; }
+        .btn-copiar:hover { opacity: 0.9; }
+        .senha-input { margin-bottom: 16px; }
+        .senha-input input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid #333; background: #0a0a0a; color: #fff; font-size: 14px; }
+        .loading { display: none; text-align: center; color: #adb5bd; font-size: 14px; margin-top: 12px; }
+        .loading.active { display: block; }
+        @media (max-width: 480px) { .card { padding: 16px; } .upload-area { padding: 16px; } .upload-area .icone { font-size: 32px; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>💰 Gerar Cobrança</h1>
+
+            <div class="senha-input">
+                <label>🔒 Senha</label>
+                <input type="password" id="senha" placeholder="Digite a senha" value="admin123">
+            </div>
+
+            <label>💵 Valor (R$)</label>
+            <input type="number" id="valor" step="0.01" placeholder="Ex: 25.00" value="25.00">
+
+            <label>📝 Descrição (opcional)</label>
+            <input type="text" id="descricao" placeholder="Ex: Conteúdo exclusivo">
+
+            <label>👤 Cliente (opcional)</label>
+            <input type="text" id="cliente" placeholder="Nome do cliente">
+
+            <label>🖼️ Imagem (opcional)</label>
+            <div class="upload-area" id="uploadArea">
+                <div class="icone">📸</div>
+                <p>Clique aqui ou arraste uma imagem</p>
+                <div class="sub">JPG, PNG, GIF até 5MB</div>
+                <input type="file" id="fileInput" accept="image/*" capture="environment">
+            </div>
+
+            <div class="preview-container" id="previewContainer">
+                <img id="previewImage" src="" alt="Preview">
+                <button class="btn-remover" onclick="removerImagem()">✕</button>
+            </div>
+
+            <button class="btn" onclick="gerarCobranca()" id="btnGerar">🚀 Gerar Cobrança</button>
+            <div class="loading" id="loading">⏳ Gerando cobrança...</div>
+
+            <div id="resultado" class="resultado">
+                <p id="mensagemResultado"></p>
+                <div id="detalhesResultado"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SENHA = 'admin123';
+        let imagemBase64 = null;
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewImage = document.getElementById('previewImage');
+
+        uploadArea.addEventListener('click', () => fileInput.click());
+        uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => { uploadArea.classList.remove('dragover'); });
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length) processarArquivo(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) processarArquivo(e.target.files[0]);
+        });
+
+        function processarArquivo(file) {
+            if (!file.type.startsWith('image/')) { alert('⚠️ Por favor, selecione uma imagem.'); return; }
+            if (file.size > 5 * 1024 * 1024) { alert('⚠️ A imagem deve ter no máximo 5MB.'); return; }
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                imagemBase64 = e.target.result;
+                previewImage.src = imagemBase64;
+                previewContainer.style.display = 'block';
+                uploadArea.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removerImagem() {
+            imagemBase64 = null;
+            previewContainer.style.display = 'none';
+            uploadArea.style.display = 'block';
+            fileInput.value = '';
+        }
+
+        async function gerarCobranca() {
+            const senha = document.getElementById('senha').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const descricao = document.getElementById('descricao').value;
+            const cliente = document.getElementById('cliente').value;
+            const resultado = document.getElementById('resultado');
+            const mensagem = document.getElementById('mensagemResultado');
+            const detalhes = document.getElementById('detalhesResultado');
+            const loading = document.getElementById('loading');
+            const btn = document.getElementById('btnGerar');
+
+            if (senha !== SENHA) {
+                resultado.className = 'resultado erro';
+                mensagem.textContent = '❌ Senha incorreta!';
+                detalhes.innerHTML = '';
+                return;
+            }
+            if (!valor || valor <= 0) {
+                resultado.className = 'resultado erro';
+                mensagem.textContent = '❌ Digite um valor válido!';
+                detalhes.innerHTML = '';
+                return;
+            }
+
+            resultado.className = 'resultado';
+            mensagem.textContent = '';
+            detalhes.innerHTML = '';
+            loading.classList.add('active');
+            btn.disabled = true;
+
+            try {
+                const response = await fetch('/api/gerar-cobranca', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ valor, descricao, cliente, imagem: imagemBase64 })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resultado.className = 'resultado sucesso';
+                    mensagem.textContent = '✅ Cobrança gerada com sucesso!';
+                    detalhes.innerHTML = `
+                        <div style="margin-top: 12px;">
+                            <p style="color: #adb5bd; font-size: 14px;">🔗 Link para o cliente:</p>
+                            <p class="link-cobranca"><a href="${data.linkCompleto}" target="_blank">${data.linkCompleto}</a></p>
+                            <button class="btn-copiar" onclick="copiarLink('${data.linkCompleto}')">📋 Copiar link</button>
+                        </div>
+                        <div class="pix-info">
+                            <p style="color: #adb5bd; font-size: 14px; margin-top: 12px;">📱 QR Code:</p>
+                            <img src="${data.pix.qrCode}" alt="QR Code PIX" />
+                            <p style="color: #adb5bd; font-size: 14px; margin-top: 8px;">📋 Código PIX:</p>
+                            <textarea rows="2" readonly>${data.pix.codigoCopiaCola}</textarea>
+                            <button class="btn-copiar" onclick="copiarTexto('${data.pix.codigoCopiaCola}')">📋 Copiar código</button>
+                        </div>
+                        <p style="color: #6b7280; font-size: 12px; margin-top: 12px;">ID: ${data.paymentId}</p>
+                    `;
+                    removerImagem();
+                } else {
+                    resultado.className = 'resultado erro';
+                    mensagem.textContent = '❌ ' + data.error;
+                    detalhes.innerHTML = '';
+                }
+            } catch (error) {
+                resultado.className = 'resultado erro';
+                mensagem.textContent = '❌ Erro ao gerar cobrança. Tente novamente.';
+                detalhes.innerHTML = '';
+                console.error(error);
+            }
+            loading.classList.remove('active');
+            btn.disabled = false;
+        }
+
+        function copiarLink(link) { navigator.clipboard.writeText(link); alert('✅ Link copiado!'); }
+        function copiarTexto(texto) { navigator.clipboard.writeText(texto); alert('✅ Código PIX copiado!'); }
+    </script>
+</body>
+</html>
