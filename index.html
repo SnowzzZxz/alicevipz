@@ -3,149 +3,311 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerar Cobrança</title>
+    <title>alicevipz</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
-            font-family: Arial, sans-serif;
-            background: #111;
-            color: #ccc;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #050505;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 100vh;
             padding: 20px;
+            margin: 0;
         }
-        .container { max-width: 400px; width: 100%; }
+        .container {
+            max-width: 420px;
+            width: 100%;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .card {
-            background: #1a1a1a;
-            border-radius: 8px;
-            padding: 24px;
-            border: 1px solid #2a2a2a;
+            background: #73187d;
+            border-radius: 16px;
+            padding: 28px 24px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: box-shadow 0.3s ease;
         }
+        .card:hover {
+            box-shadow: 0 6px 30px rgba(115, 24, 125, 0.2);
+        }
+
+        .btn-voltar {
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 8px 16px;
+            border-radius: 8px;
+            color: #adb5bd;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            margin-bottom: 16px;
+            display: inline-block;
+            text-decoration: none;
+        }
+        .btn-voltar:hover {
+            border-color: #FF00FF;
+            color: #fff;
+            transform: scale(1.02);
+        }
+
         h1 {
             color: #fff;
-            font-size: 20px;
+            font-size: 22px;
+            font-weight: 600;
             text-align: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
         }
+
         label {
             display: block;
             font-size: 13px;
-            color: #888;
+            color: #adb5bd;
             margin-bottom: 4px;
+            font-weight: 500;
         }
+
         input {
             width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            border: 1px solid #2a2a2a;
-            background: #0d0d0d;
-            color: #ddd;
-            font-size: 14px;
-            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
+            color: #fff;
+            font-size: 15px;
+            margin-bottom: 16px;
+            transition: all 0.25s ease;
         }
         input:focus {
-            border-color: #555;
+            border-color: #FF00FF;
             outline: none;
+            box-shadow: 0 0 0 4px rgba(255, 0, 255, 0.1);
+            background: rgba(0, 0, 0, 0.4);
         }
+        input::placeholder {
+            color: #6b7280;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
         .btn {
-            background: #2a2a2a;
+            background: #FF00FF;
             border: none;
             padding: 12px;
-            border-radius: 6px;
+            border-radius: 10px;
             color: #fff;
+            font-weight: 600;
             font-size: 15px;
             cursor: pointer;
             width: 100%;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 20px rgba(255, 0, 255, 0.25);
         }
         .btn:hover {
-            background: #333;
+            transform: scale(1.02);
+            box-shadow: 0 6px 30px rgba(255, 0, 255, 0.35);
         }
+        .btn:active {
+            transform: scale(0.98);
+        }
+
         .resultado {
-            margin-top: 16px;
-            padding: 12px;
-            border-radius: 6px;
+            margin-top: 20px;
+            padding: 16px;
+            border-radius: 12px;
             display: none;
-            border: 1px solid #2a2a2a;
-            background: #0d0d0d;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.4s ease-out;
         }
         .resultado.sucesso {
             display: block;
             border-color: #4ade80;
+            background: rgba(74, 222, 128, 0.05);
         }
         .resultado.erro {
             display: block;
             border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.05);
         }
-        .link-cobranca {
-            word-break: break-all;
-            font-size: 14px;
-            margin: 8px 0;
-        }
-        .link-cobranca a {
-            color: #4ade80;
-            text-decoration: none;
+
+        .pix-info {
+            text-align: center;
         }
         .pix-info img {
             max-width: 160px;
             display: block;
-            margin: 10px auto;
+            margin: 12px auto;
             background: #fff;
             padding: 8px;
-            border-radius: 6px;
+            border-radius: 12px;
+            animation: fadeInUp 0.5s ease-out;
+            transition: transform 0.3s ease;
         }
+        .pix-info img:hover {
+            transform: scale(1.02);
+        }
+
         .pix-info textarea {
             width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #2a2a2a;
-            background: #0d0d0d;
-            color: #aaa;
-            font-size: 11px;
-            font-family: monospace;
-            resize: none;
-        }
-        .btn-copiar {
-            background: #2a2a2a;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 4px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(0, 0, 0, 0.3);
             color: #fff;
             font-size: 12px;
+            font-family: monospace;
+            resize: none;
+            margin: 8px 0;
+            transition: border-color 0.2s;
+        }
+        .pix-info textarea:focus {
+            border-color: #FF00FF;
+            outline: none;
+        }
+
+        .btn-copiar {
+            background: rgba(255, 255, 255, 0.08);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
             cursor: pointer;
-            margin-top: 6px;
+            transition: all 0.2s ease;
         }
         .btn-copiar:hover {
-            background: #333;
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+        .btn-copiar:active {
+            transform: scale(0.95);
+        }
+
+        .status-pix {
+            color: #facc15;
+            font-size: 14px;
+            text-align: center;
+            margin: 12px 0;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            animation: pulse-status 2s infinite;
+        }
+        .status-pix.pago {
+            color: #4ade80;
+            animation: none;
+        }
+
+        @keyframes pulse-status {
+            0%,
+            100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .valor-exibido {
+            font-size: 28px;
+            color: #fff;
+            text-align: center;
+            margin: 8px 0;
+            font-weight: 600;
+        }
+        .cliente-exibido {
+            color: #adb5bd;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #1a1a1a;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 999;
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 20px;
+            }
+            .valor-exibido {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="card">
-            <h1>💰 Gerar Cobrança</h1>
+            <a href="https://grupozangi.vercel.app" class="btn-voltar">← Voltar</a>
+            <h1>alicevipz</h1>
+
+            <label>Nome</label>
+            <input type="text" id="cliente" placeholder="Seu nome" value="">
 
             <label>Valor (R$)</label>
-            <input type="number" id="valor" step="0.01" value="25.00">
+            <input type="number" id="valor" step="1" min="5" placeholder="Ex: 10">
 
-            <label>Descrição (opcional)</label>
-            <input type="text" id="descricao" placeholder="Ex: Conteúdo exclusivo">
-
-            <label>Cliente (opcional)</label>
-            <input type="text" id="cliente" placeholder="Nome do cliente">
-
-            <label>Link personalizado (opcional)</label>
-            <input type="text" id="linkPersonalizado" placeholder="Ex: cliente01">
-
-            <button class="btn" onclick="gerarCobranca()">🚀 Gerar Cobrança</button>
+            <button class="btn" onclick="gerarCobranca()">Gerar cobrança</button>
 
             <div id="resultado" class="resultado">
                 <p id="mensagemResultado"></p>
                 <div id="detalhesResultado"></div>
             </div>
+
+            <div id="statusPix" class="status-pix" style="display: none;">⏳ Aguardando pagamento...</div>
         </div>
     </div>
+
+    <div id="toast" class="toast">✅ Copiado!</div>
 
     <script>
         const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
@@ -153,97 +315,117 @@
         const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
 
         async function gerarCobranca() {
+            const cliente = document.getElementById('cliente').value || 'Cliente';
             const valor = parseFloat(document.getElementById('valor').value);
-            const descricao = document.getElementById('descricao').value;
-            const cliente = document.getElementById('cliente').value;
-            const linkPersonalizado = document.getElementById('linkPersonalizado').value;
 
             const resultado = document.getElementById('resultado');
             const mensagem = document.getElementById('mensagemResultado');
             const detalhes = document.getElementById('detalhesResultado');
+            const statusPix = document.getElementById('statusPix');
 
-            if (!valor || valor <= 0) {
+            if (!valor || valor < 5) {
                 resultado.className = 'resultado erro';
                 resultado.style.display = 'block';
-                mensagem.textContent = '❌ Digite um valor válido';
+                mensagem.textContent = 'Valor mínimo: R$ 5';
                 detalhes.innerHTML = '';
+                statusPix.style.display = 'none';
                 return;
             }
 
             resultado.className = 'resultado';
-            mensagem.textContent = '⏳ Gerando...';
+            mensagem.textContent = 'Gerando...';
             detalhes.innerHTML = '';
+            statusPix.style.display = 'none';
 
             try {
-                const response = await fetch(`${ZPAY_API_URL}/payments`, {
+                const response = await fetch('/api/criar-pix', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'client-id': CLIENT_ID,
-                        'client-secret': CLIENT_SECRET
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        amount: parseFloat(valor),
-                        payerName: cliente || 'Cliente',
-                        description: descricao || 'Cobrança'
+                        valor: valor.toFixed(2),
+                        descricao: 'Pagamento',
+                        nome_cliente: cliente
                     })
                 });
 
                 const data = await response.json();
-                console.log('📦 Resposta Zpay:', data);
 
-                const paymentId = data.paymentId || data.id || data.transactionId;
-                const codigoPix = data.copyPaste || data.pixCode || data.pix_code || data.brCode || data.pix || null;
-                const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
-                    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
-
-                if (paymentId) {
-                    let linkId = linkPersonalizado ? linkPersonalizado.trim() : null;
-                    if (linkId) {
-                        linkId = linkId.replace(/[^a-zA-Z0-9-_]/g, '');
-                        if (!linkId) linkId = paymentId;
-                    } else {
-                        linkId = paymentId;
-                    }
-
+                if (data.success) {
                     resultado.className = 'resultado sucesso';
                     resultado.style.display = 'block';
-                    mensagem.textContent = '✅ Cobrança gerada com sucesso!';
+                    mensagem.textContent = 'Cobrança gerada';
 
                     detalhes.innerHTML = `
-                        <div class="link-cobranca">
-                            🔗 Link: <a href="/p/${linkId}" target="_blank">/p/${linkId}</a>
-                        </div>
-                        <button class="btn-copiar" onclick="copiar('https://alicevipz.vercel.app/p/${linkId}')">📋 Copiar link</button>
+                        <div class="cliente-exibido">${cliente}</div>
+                        <div class="valor-exibido">R$ ${parseFloat(valor).toFixed(2)}</div>
                         <div class="pix-info">
-                            <p style="color:#888;font-size:13px;margin:8px 0;">📱 QR Code:</p>
-                            <img src="${qrCode}" alt="QR Code" />
-                            <p style="color:#888;font-size:13px;margin:8px 0;">📋 Código PIX:</p>
-                            <textarea rows="2" readonly>${codigoPix || paymentId}</textarea>
-                            <button class="btn-copiar" onclick="copiar('${codigoPix || paymentId}')">📋 Copiar código</button>
+                            <img src="${data.pix.qrCode}" alt="QR Code" />
+                            <textarea rows="2" readonly>${data.pix.codigoCopiaCola}</textarea>
+                            <button class="btn-copiar" onclick="copiarTexto('${data.pix.codigoCopiaCola}')">Copiar</button>
                         </div>
-                        <p style="color:#555;font-size:11px;margin-top:8px;">ID: ${paymentId}</p>
+                        <p style="color:#6b7280;font-size:11px;margin-top:8px;">ID: ${data.transactionId}</p>
                     `;
+
+                    statusPix.style.display = 'block';
+                    statusPix.textContent = '⏳ Aguardando pagamento...';
+                    statusPix.className = 'status-pix';
+
+                    verificarPagamento(data.transactionId);
                 } else {
                     resultado.className = 'resultado erro';
                     resultado.style.display = 'block';
-                    mensagem.textContent = '❌ ' + (data.message || 'Erro ao gerar cobrança');
+                    mensagem.textContent = data.error || 'Erro ao gerar cobrança';
                     detalhes.innerHTML = '';
+                    statusPix.style.display = 'none';
                 }
 
             } catch (error) {
-                console.error('❌ Erro:', error);
                 resultado.className = 'resultado erro';
                 resultado.style.display = 'block';
-                mensagem.textContent = '❌ Erro ao gerar cobrança. Tente novamente.';
+                mensagem.textContent = 'Erro ao gerar cobrança';
                 detalhes.innerHTML = '';
+                statusPix.style.display = 'none';
             }
         }
 
-        function copiar(texto) {
-            navigator.clipboard.writeText(texto);
-            alert('✅ Copiado!');
+        async function verificarPagamento(transactionId) {
+            let tentativas = 0;
+            const statusEl = document.getElementById('statusPix');
+
+            const intervalo = setInterval(async () => {
+                tentativas++;
+                try {
+                    const response = await fetch(`/api/verificar-pagamento?id=${transactionId}`);
+                    const data = await response.json();
+
+                    if (data.status === 'paid') {
+                        clearInterval(intervalo);
+                        statusEl.textContent = '✅ Pagamento confirmado';
+                        statusEl.className = 'status-pix pago';
+                    } else if (tentativas > 30) {
+                        clearInterval(intervalo);
+                        statusEl.textContent = '⏳ Se já pagou, aguarde alguns minutos';
+                    }
+                } catch (error) {}
+            }, 5000);
         }
+
+        function copiarTexto(texto) {
+            navigator.clipboard.writeText(texto);
+            const toast = document.getElementById('toast');
+            toast.textContent = '✅ Copiado!';
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        document.getElementById('valor').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') gerarCobranca();
+        });
+        document.getElementById('cliente').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') gerarCobranca();
+        });
     </script>
 </body>
 </html>
