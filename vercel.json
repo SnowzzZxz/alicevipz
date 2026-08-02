@@ -1,13 +1,27 @@
 {
     "version": 2,
+    "builds": [
+        {
+            "src": "api/**/*.js",
+            "use": "@vercel/node"
+        }
+    ],
     "routes": [
         {
-            "src": "/api/(.*)",
-            "dest": "/api/$1"
+            "src": "/api/gerar-cobranca",
+            "dest": "/api/gerar-cobranca.js"
+        },
+        {
+            "src": "/api/verificar-pagamento",
+            "dest": "/api/verificar-pagamento.js"
         },
         {
             "src": "/p/(.*)",
-            "dest": "/api/p/$1"
+            "dest": "/api/p/[id].js"
+        },
+        {
+            "src": "/",
+            "dest": "/index.html"
         },
         {
             "src": "/(.*)",
