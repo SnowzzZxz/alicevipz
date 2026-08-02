@@ -3,15 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alice VIP</title>
+    <title>Gerar Cobrança</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: Arial, sans-serif;
             background: #111;
             color: #ccc;
             display: flex;
@@ -20,10 +16,7 @@
             min-height: 100vh;
             padding: 20px;
         }
-        .container {
-            max-width: 400px;
-            width: 100%;
-        }
+        .container { max-width: 400px; width: 100%; }
         .card {
             background: #1a1a1a;
             border-radius: 8px;
@@ -33,9 +26,8 @@
         h1 {
             color: #fff;
             font-size: 20px;
-            font-weight: normal;
-            margin-bottom: 16px;
             text-align: center;
+            margin-bottom: 16px;
         }
         label {
             display: block;
@@ -45,7 +37,7 @@
         }
         input {
             width: 100%;
-            padding: 10px 12px;
+            padding: 10px;
             border-radius: 6px;
             border: 1px solid #2a2a2a;
             background: #0d0d0d;
@@ -66,21 +58,9 @@
             font-size: 15px;
             cursor: pointer;
             width: 100%;
-            transition: 0.2s;
         }
         .btn:hover {
             background: #333;
-        }
-        .btn-secondary {
-            background: transparent;
-            border: 1px solid #2a2a2a;
-            margin-top: 8px;
-        }
-        .btn-secondary:hover {
-            border-color: #555;
-        }
-        .hidden {
-            display: none;
         }
         .resultado {
             margin-top: 16px;
@@ -106,9 +86,6 @@
         .link-cobranca a {
             color: #4ade80;
             text-decoration: none;
-        }
-        .link-cobranca a:hover {
-            text-decoration: underline;
         }
         .pix-info img {
             max-width: 160px;
@@ -142,89 +119,45 @@
         .btn-copiar:hover {
             background: #333;
         }
-        .aviso {
-            color: #555;
-            font-size: 12px;
-            text-align: center;
-            margin-top: 12px;
-        }
-        .erro-login {
-            color: #ff6b6b;
-            font-size: 13px;
-            text-align: center;
-            margin-top: 8px;
-            display: none;
-        }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="card">
+            <h1>💰 Gerar Cobrança</h1>
 
-        <!-- LOGIN -->
-        <div id="telaLogin" class="card">
-            <h1>Alice VIP</h1>
-            <label>Usuário</label>
-            <input type="text" id="usuario" value="admin">
-            <label>Senha</label>
-            <input type="password" id="senha" value="123">
-            <button class="btn" onclick="fazerLogin()">Entrar</button>
-            <div id="erroLogin" class="erro-login">Usuário ou senha incorretos</div>
-        </div>
-
-        <!-- ADMIN -->
-        <div id="telaAdmin" class="card hidden">
-            <h1>Gerar Cobrança</h1>
             <label>Valor (R$)</label>
             <input type="number" id="valor" step="0.01" value="25.00">
-            <label>Descrição</label>
-            <input type="text" id="descricao" placeholder="Opcional">
-            <label>Cliente</label>
-            <input type="text" id="cliente" placeholder="Opcional">
+
+            <label>Descrição (opcional)</label>
+            <input type="text" id="descricao" placeholder="Ex: Conteúdo exclusivo">
+
+            <label>Cliente (opcional)</label>
+            <input type="text" id="cliente" placeholder="Nome do cliente">
+
             <label>Link personalizado (opcional)</label>
             <input type="text" id="linkPersonalizado" placeholder="Ex: cliente01">
-            <button class="btn" onclick="gerarCobranca()">Gerar</button>
-            <button class="btn btn-secondary" onclick="sair()">Sair</button>
+
+            <button class="btn" onclick="gerarCobranca()">🚀 Gerar Cobrança</button>
 
             <div id="resultado" class="resultado">
                 <p id="mensagemResultado"></p>
                 <div id="detalhesResultado"></div>
             </div>
         </div>
-
     </div>
 
     <script>
-        const USUARIO = 'admin';
-        const SENHA = '123';
-
-        function fazerLogin() {
-            const usuario = document.getElementById('usuario').value;
-            const senha = document.getElementById('senha').value;
-            const erro = document.getElementById('erroLogin');
-
-            if (usuario === USUARIO && senha === SENHA) {
-                erro.style.display = 'none';
-                document.getElementById('telaLogin').classList.add('hidden');
-                document.getElementById('telaAdmin').classList.remove('hidden');
-            } else {
-                erro.style.display = 'block';
-            }
-        }
-
-        function sair() {
-            document.getElementById('telaAdmin').classList.add('hidden');
-            document.getElementById('telaLogin').classList.remove('hidden');
-            document.getElementById('usuario').value = 'admin';
-            document.getElementById('senha').value = '123';
-            document.getElementById('resultado').className = 'resultado';
-            document.getElementById('resultado').style.display = 'none';
-        }
+        const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
+        const CLIENT_SECRET = 'zsk_87b13fb23ba5eed5d6d9f0f9e6153d20dfeac10e24a66dd6';
+        const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
 
         async function gerarCobranca() {
             const valor = parseFloat(document.getElementById('valor').value);
             const descricao = document.getElementById('descricao').value;
             const cliente = document.getElementById('cliente').value;
             const linkPersonalizado = document.getElementById('linkPersonalizado').value;
+
             const resultado = document.getElementById('resultado');
             const mensagem = document.getElementById('mensagemResultado');
             const detalhes = document.getElementById('detalhesResultado');
@@ -232,61 +165,85 @@
             if (!valor || valor <= 0) {
                 resultado.className = 'resultado erro';
                 resultado.style.display = 'block';
-                mensagem.textContent = 'Valor inválido';
+                mensagem.textContent = '❌ Digite um valor válido';
                 detalhes.innerHTML = '';
                 return;
             }
 
             resultado.className = 'resultado';
-            mensagem.textContent = '...';
+            mensagem.textContent = '⏳ Gerando...';
             detalhes.innerHTML = '';
 
             try {
-                const response = await fetch('/api/gerar-cobranca', {
+                const response = await fetch(`${ZPAY_API_URL}/payments`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ valor, descricao, cliente, linkPersonalizado })
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'client-id': CLIENT_ID,
+                        'client-secret': CLIENT_SECRET
+                    },
+                    body: JSON.stringify({
+                        amount: parseFloat(valor),
+                        payerName: cliente || 'Cliente',
+                        description: descricao || 'Cobrança'
+                    })
                 });
-                const data = await response.json();
 
-                if (data.success) {
+                const data = await response.json();
+                console.log('📦 Resposta Zpay:', data);
+
+                const paymentId = data.paymentId || data.id || data.transactionId;
+                const codigoPix = data.copyPaste || data.pixCode || data.pix_code || data.brCode || data.pix || null;
+                const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
+                    `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
+
+                if (paymentId) {
+                    let linkId = linkPersonalizado ? linkPersonalizado.trim() : null;
+                    if (linkId) {
+                        linkId = linkId.replace(/[^a-zA-Z0-9-_]/g, '');
+                        if (!linkId) linkId = paymentId;
+                    } else {
+                        linkId = paymentId;
+                    }
+
                     resultado.className = 'resultado sucesso';
                     resultado.style.display = 'block';
-                    mensagem.textContent = 'Cobrança gerada';
+                    mensagem.textContent = '✅ Cobrança gerada com sucesso!';
+
                     detalhes.innerHTML = `
-                        <div class="link-cobranca"><a href="${data.linkCompleto}" target="_blank">${data.linkCompleto}</a></div>
-                        <button class="btn-copiar" onclick="copiar('${data.linkCompleto}')">Copiar link</button>
-                        <div class="pix-info">
-                            <img src="${data.pix.qrCode}" alt="QR" />
-                            <textarea rows="2" readonly>${data.pix.codigoCopiaCola}</textarea>
-                            <button class="btn-copiar" onclick="copiar('${data.pix.codigoCopiaCola}')">Copiar código</button>
+                        <div class="link-cobranca">
+                            🔗 Link: <a href="/p/${linkId}" target="_blank">/p/${linkId}</a>
                         </div>
+                        <button class="btn-copiar" onclick="copiar('https://alicevipz.vercel.app/p/${linkId}')">📋 Copiar link</button>
+                        <div class="pix-info">
+                            <p style="color:#888;font-size:13px;margin:8px 0;">📱 QR Code:</p>
+                            <img src="${qrCode}" alt="QR Code" />
+                            <p style="color:#888;font-size:13px;margin:8px 0;">📋 Código PIX:</p>
+                            <textarea rows="2" readonly>${codigoPix || paymentId}</textarea>
+                            <button class="btn-copiar" onclick="copiar('${codigoPix || paymentId}')">📋 Copiar código</button>
+                        </div>
+                        <p style="color:#555;font-size:11px;margin-top:8px;">ID: ${paymentId}</p>
                     `;
                 } else {
                     resultado.className = 'resultado erro';
                     resultado.style.display = 'block';
-                    mensagem.textContent = data.error || 'Erro';
+                    mensagem.textContent = '❌ ' + (data.message || 'Erro ao gerar cobrança');
                     detalhes.innerHTML = '';
                 }
-            } catch {
+
+            } catch (error) {
+                console.error('❌ Erro:', error);
                 resultado.className = 'resultado erro';
                 resultado.style.display = 'block';
-                mensagem.textContent = 'Erro ao gerar';
+                mensagem.textContent = '❌ Erro ao gerar cobrança. Tente novamente.';
                 detalhes.innerHTML = '';
             }
         }
 
         function copiar(texto) {
             navigator.clipboard.writeText(texto);
-            alert('Copiado');
+            alert('✅ Copiado!');
         }
-
-        document.getElementById('senha').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') fazerLogin();
-        });
-        document.getElementById('usuario').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') fazerLogin();
-        });
     </script>
 </body>
 </html>
