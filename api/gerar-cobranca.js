@@ -58,7 +58,7 @@ module.exports = async (req, res) => {
         const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
             `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
 
-        // 🔥 SALVA USANDO O MÉTODO SET
+        // 🔥 SALVA EM MEMÓRIA
         cobrancasDB.set(linkId, {
             paymentId: paymentId,
             valor: parseFloat(valor),
