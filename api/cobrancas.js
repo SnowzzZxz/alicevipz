@@ -1,4 +1,3 @@
-// api/cobrancas.js
 const fs = require('fs');
 const path = require('path');
 
@@ -28,7 +27,6 @@ function salvarCobrancas(cobrancas) {
 
 let cobrancas = carregarCobrancas();
 
-// Exporta um objeto com métodos de acesso
 module.exports = {
     get: (id) => cobrancas[id],
     set: (id, dados) => {
