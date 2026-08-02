@@ -1,5 +1,4 @@
 const axios = require('axios');
-const cobrancasDB = require('./cobrancas.js');
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -12,19 +11,19 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { valor, descricao, cliente, linkPersonalizado } = req.body;
+        const { valor, descricao, cliente } = req.body;
+
+        console.log('📥 Recebido:', { valor, descricao, cliente });
 
         if (!valor || valor <= 0) {
             return res.status(400).json({ error: 'Valor inválido' });
         }
 
-        // 🔥 SEMPRE USA ALEATÓRIO (IGNORA O linkPersonalizado)
-        const linkId = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
-        console.log(`🔗 Link gerado: ${linkId}`);
-
         const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
         const CLIENT_SECRET = 'zsk_87b13fb23ba5eed5d6d9f0f9e6153d20dfeac10e24a66dd6';
         const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
+
+        console.log('📤 Enviando para Zpay...');
 
         const response = await axios.post(
             `${ZPAY_API_URL}/payments`,
@@ -42,32 +41,18 @@ module.exports = async (req, res) => {
             }
         );
 
+        console.log('✅ Resposta Zpay:', response.status, response.data);
+
         const data = response.data;
         const paymentId = data.paymentId || data.id || data.transactionId;
         const codigoPix = data.copyPaste || data.pixCode || data.pix_code || data.brCode || data.pix || null;
         const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
             `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
 
-        // 🔥 SALVA
-        cobrancasDB.set(linkId, {
-            paymentId: paymentId,
-            valor: parseFloat(valor),
-            descricao: descricao || 'Cobrança',
-            cliente: cliente || 'Cliente',
-            status: 'pending',
-            qrCode: qrCode,
-            codigoPix: codigoPix || paymentId,
-            data: new Date().toISOString()
-        });
-
-        // 🔥 LOG PRA VER SE SALVOU
-        console.log(`✅ Cobrança salva: ${linkId}`);
-        console.log(`📦 Total de cobranças:`, Object.keys(cobrancasDB.getAll()).length);
-
         res.status(200).json({
             success: true,
-            link: `/p/${linkId}`,
-            linkCompleto: `https://alicevipz.vercel.app/p/${linkId}`,
+            link: `/p/${paymentId}`,
+            linkCompleto: `https://alicevipz.vercel.app/p/${paymentId}`,
             pix: {
                 qrCode: qrCode,
                 codigoCopiaCola: codigoPix || paymentId
@@ -76,10 +61,15 @@ module.exports = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('❌ Erro:', error.response?.data || error.message);
+        console.error('❌ Erro COMPLETO:', {
+            message: error.message,
+            status: error.response?.status,
+            data: error.response?.data,
+            headers: error.response?.headers
+        });
         res.status(400).json({
             success: false,
-            error: error.response?.data?.message || 'Erro ao gerar cobrança'
+            error: error.response?.data?.message || error.message || 'Erro ao gerar cobrança'
         });
     }
 };
