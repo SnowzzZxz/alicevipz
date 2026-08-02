@@ -1,31 +1,44 @@
 const fs = require('fs');
 const path = require('path');
 
-const COBRANCAS_FILE = path.join(__dirname, '../cobrancas.json');
+// 🔥 ARQUIVO NA PASTA PUBLIC (QUE A VERCEL MANTÉM)
+const COBRANCAS_FILE = path.join(__dirname, '../public/cobrancas.json');
 
-let cobrancas = {};
-
-// Tenta carregar do arquivo (se existir e se a Vercel deixar)
-try {
-    if (fs.existsSync(COBRANCAS_FILE)) {
-        const data = fs.readFileSync(COBRANCAS_FILE, 'utf8');
-        cobrancas = JSON.parse(data);
-        console.log('✅ Cobranças carregadas do arquivo');
-    }
-} catch (e) {
-    console.log('⚠️ Não foi possível carregar cobranças do arquivo, usando memória');
+// Garante que a pasta public existe
+const publicDir = path.join(__dirname, '../public');
+if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
 }
+
+function carregarCobrancas() {
+    try {
+        if (fs.existsSync(COBRANCAS_FILE)) {
+            const data = fs.readFileSync(COBRANCAS_FILE, 'utf8');
+            return JSON.parse(data);
+        }
+    } catch (e) {
+        console.log('⚠️ Erro ao carregar:', e.message);
+    }
+    return {};
+}
+
+function salvarCobrancas(cobrancas) {
+    try {
+        fs.writeFileSync(COBRANCAS_FILE, JSON.stringify(cobrancas, null, 2));
+        return true;
+    } catch (e) {
+        console.log('⚠️ Erro ao salvar:', e.message);
+        return false;
+    }
+}
+
+let cobrancas = carregarCobrancas();
 
 module.exports = {
     get: (id) => cobrancas[id],
     set: (id, dados) => {
         cobrancas[id] = dados;
-        // Tenta salvar no arquivo (se a Vercel deixar)
-        try {
-            fs.writeFileSync(COBRANCAS_FILE, JSON.stringify(cobrancas, null, 2));
-        } catch (e) {
-            console.log('⚠️ Não foi possível salvar no arquivo, mantendo em memória');
-        }
+        salvarCobrancas(cobrancas);
     },
     getAll: () => cobrancas
 };
