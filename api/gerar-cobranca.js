@@ -12,10 +12,28 @@ module.exports = async (req, res) => {
     }
 
     try {
-        const { valor, descricao, cliente } = req.body;
+        const { valor, descricao, cliente, linkPersonalizado } = req.body;
 
         if (!valor || valor <= 0) {
             return res.status(400).json({ error: 'Valor inválido' });
+        }
+
+        // 🔥 USA O LINK PERSONALIZADO OU GERA UM ALEATÓRIO
+        let linkId = linkPersonalizado ? linkPersonalizado.trim() : null;
+
+        if (linkId) {
+            // Verifica se o link já existe
+            if (cobrancas[linkId]) {
+                return res.status(400).json({ error: 'Este link já está sendo usado. Escolha outro nome.' });
+            }
+            // Remove caracteres especiais
+            linkId = linkId.replace(/[^a-zA-Z0-9-_]/g, '');
+            if (!linkId) {
+                return res.status(400).json({ error: 'Nome do link inválido. Use apenas letras, números, - e _' });
+            }
+        } else {
+            // Gera ID aleatório se não foi fornecido
+            linkId = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
         }
 
         const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
@@ -40,7 +58,6 @@ module.exports = async (req, res) => {
 
         const data = response.data;
         const paymentId = data.paymentId || data.id || data.transactionId;
-        const linkId = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
         const codigoPix = data.copyPaste || data.pixCode || data.pix_code || data.brCode || data.pix || null;
         const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
             `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
