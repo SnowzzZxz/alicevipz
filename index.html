@@ -180,6 +180,8 @@
             <input type="text" id="descricao" placeholder="Opcional">
             <label>Cliente</label>
             <input type="text" id="cliente" placeholder="Opcional">
+            <label>Link personalizado (opcional)</label>
+            <input type="text" id="linkPersonalizado" placeholder="Ex: cliente01">
             <button class="btn" onclick="gerarCobranca()">Gerar</button>
             <button class="btn btn-secondary" onclick="sair()">Sair</button>
 
@@ -222,6 +224,7 @@
             const valor = parseFloat(document.getElementById('valor').value);
             const descricao = document.getElementById('descricao').value;
             const cliente = document.getElementById('cliente').value;
+            const linkPersonalizado = document.getElementById('linkPersonalizado').value;
             const resultado = document.getElementById('resultado');
             const mensagem = document.getElementById('mensagemResultado');
             const detalhes = document.getElementById('detalhesResultado');
@@ -242,7 +245,7 @@
                 const response = await fetch('/api/gerar-cobranca', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ valor, descricao, cliente })
+                    body: JSON.stringify({ valor, descricao, cliente, linkPersonalizado })
                 });
                 const data = await response.json();
 
