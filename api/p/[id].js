@@ -1,65 +1,126 @@
 const axios = require('axios');
 
 module.exports = async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    const { id } = req.query; // ID é o paymentId da Zpay
 
-    if (req.method === 'OPTIONS') {
-        res.status(200).end();
-        return;
-    }
+    console.log(`🔍 Buscando cobrança: ${id}`);
 
     try {
-        const { valor, descricao, cliente } = req.body;
-
-        if (!valor || valor <= 0) {
-            return res.status(400).json({ error: 'Valor inválido' });
-        }
-
         const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
         const CLIENT_SECRET = 'zsk_87b13fb23ba5eed5d6d9f0f9e6153d20dfeac10e24a66dd6';
         const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
 
-        const response = await axios.post(
-            `${ZPAY_API_URL}/payments`,
-            {
-                amount: parseFloat(valor),
-                payerName: cliente || 'Cliente',
-                description: descricao || 'Cobrança'
-            },
+        // 🔥 BUSCA A COBRANÇA DIRETAMENTE NA ZPAY
+        const response = await axios.get(
+            `${ZPAY_API_URL}/donations/${id}`,
             {
                 headers: {
-                    'Content-Type': 'application/json',
                     'client-id': CLIENT_ID,
                     'client-secret': CLIENT_SECRET
                 }
             }
         );
 
-        const data = response.data;
-        const paymentId = data.paymentId || data.id || data.transactionId;
-        const codigoPix = data.copyPaste || data.pixCode || data.pix_code || data.brCode || data.pix || null;
-        const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
-            `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
+        const cobranca = response.data;
+        console.log('✅ Cobrança encontrada:', cobranca);
 
-        // 🔥 O LINK USA O paymentId DA ZPAY
-        res.status(200).json({
-            success: true,
-            link: `/p/${paymentId}`,
-            linkCompleto: `https://alicevipz.vercel.app/p/${paymentId}`,
-            pix: {
-                qrCode: qrCode,
-                codigoCopiaCola: codigoPix || paymentId
-            },
-            paymentId: paymentId
-        });
+        if (!cobranca) {
+            return res.status(404).send(`
+                <!DOCTYPE html>
+                <html>
+                <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404</title>
+                <style>body{background:#111;color:#ccc;font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}</style>
+                </head>
+                <body><div style="background:#1a1a1a;padding:24px;border-radius:8px;border:1px solid #2a2a2a;text-align:center">Cobrança não encontrada</div></body>
+                </html>
+            `);
+        }
+
+        const valor = cobranca.amount || cobranca.valor || 0;
+        const descricao = cobranca.description || cobranca.descricao || 'Cobrança';
+        const codigoPix = cobranca.copyPaste || cobranca.pixCode || cobranca.pix_code || cobranca.brCode || cobranca.pix || null;
+        const qrCode = cobranca.qrCodeBase64 || cobranca.qrCode || cobranca.qr_code ||
+            `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || id)}`;
+
+        const html = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <title>Pagamento</title>
+                <style>
+                    *{margin:0;padding:0;box-sizing:border-box}
+                    body{background:#111;color:#ccc;font-family:Arial;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
+                    .container{max-width:400px;width:100%}
+                    .card{background:#1a1a1a;border-radius:8px;padding:24px;border:1px solid #2a2a2a;text-align:center}
+                    .valor{font-size:28px;color:#fff;margin:12px 0}
+                    .status{color:#ffd43b;font-size:14px;margin:12px 0}
+                    .status.pago{color:#4ade80}
+                    .qr{background:#fff;padding:12px;border-radius:6px;display:inline-block;margin:10px auto}
+                    .qr img{max-width:160px;display:block}
+                    .pix-code{display:flex;gap:8px;margin:12px 0}
+                    .pix-code input{flex:1;padding:8px;border-radius:6px;border:1px solid #2a2a2a;background:#0d0d0d;color:#ddd;font-size:12px;font-family:monospace}
+                    .pix-code button{background:#2a2a2a;border:none;padding:8px 16px;border-radius:6px;color:#fff;cursor:pointer}
+                    .pix-code button:hover{background:#333}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="card">
+                        <div style="color:#888;font-size:14px">${descricao}</div>
+                        <div class="valor">R$ ${parseFloat(valor).toFixed(2)}</div>
+                        <div class="status" id="statusPix">Aguardando pagamento...</div>
+                        <div class="qr"><img id="qrCodeImage" src="${qrCode}" alt="QR" /></div>
+                        <div class="pix-code">
+                            <input type="text" id="codigoPix" value="${codigoPix || ''}" readonly />
+                            <button onclick="copiar()">Copiar</button>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    const paymentId = '${id}';
+                    function copiar() {
+                        const input = document.getElementById('codigoPix');
+                        input.select();
+                        navigator.clipboard.writeText(input.value);
+                        alert('Copiado');
+                    }
+                    let tentativas = 0;
+                    const statusEl = document.getElementById('statusPix');
+                    const intervalo = setInterval(async () => {
+                        tentativas++;
+                        try {
+                            const response = await fetch('/api/verificar-pagamento?id=' + paymentId);
+                            const data = await response.json();
+                            if (data.status === 'paid') {
+                                clearInterval(intervalo);
+                                statusEl.textContent = 'PAGAMENTO CONFIRMADO';
+                                statusEl.className = 'status pago';
+                            } else if (tentativas > 20) {
+                                clearInterval(intervalo);
+                                statusEl.textContent = 'Se já pagou, aguarde alguns minutos';
+                            }
+                        } catch {}
+                    }, 5000);
+                </script>
+            </body>
+            </html>
+        `;
+
+        res.setHeader('Content-Type', 'text/html');
+        res.status(200).send(html);
 
     } catch (error) {
-        console.error('❌ Erro:', error.response?.data || error.message);
-        res.status(400).json({
-            success: false,
-            error: error.response?.data?.message || 'Erro ao gerar cobrança'
-        });
+        console.error('❌ Erro ao buscar cobrança:', error.response?.data || error.message);
+        res.status(404).send(`
+            <!DOCTYPE html>
+            <html>
+            <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>404</title>
+            <style>body{background:#111;color:#ccc;font-family:Arial;display:flex;justify-content:center;align-items:center;height:100vh;margin:0}</style>
+            </head>
+            <body><div style="background:#1a1a1a;padding:24px;border-radius:8px;border:1px solid #2a2a2a;text-align:center">Cobrança não encontrada</div></body>
+            </html>
+        `);
     }
 };
