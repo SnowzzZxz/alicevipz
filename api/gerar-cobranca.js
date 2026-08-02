@@ -18,20 +18,21 @@ module.exports = async (req, res) => {
             return res.status(400).json({ error: 'Valor inválido' });
         }
 
+        // GERA O ID
         let linkId = linkPersonalizado ? linkPersonalizado.trim() : null;
-
         if (linkId) {
             if (cobrancasDB.get(linkId)) {
-                return res.status(400).json({ error: 'Este link já está sendo usado. Escolha outro nome.' });
+                return res.status(400).json({ error: 'Este link já existe' });
             }
             linkId = linkId.replace(/[^a-zA-Z0-9-_]/g, '');
             if (!linkId) {
-                return res.status(400).json({ error: 'Nome do link inválido. Use apenas letras, números, - e _' });
+                return res.status(400).json({ error: 'Link inválido' });
             }
         } else {
             linkId = Date.now().toString(36) + Math.random().toString(36).substring(2, 6);
         }
 
+        // CRIA COBRANÇA NA ZPAY
         const CLIENT_ID = 'zpk_541f4b2f71855fb26e1201a7';
         const CLIENT_SECRET = 'zsk_87b13fb23ba5eed5d6d9f0f9e6153d20dfeac10e24a66dd6';
         const ZPAY_API_URL = 'https://zpaysolution.com/api/v1';
@@ -58,16 +59,16 @@ module.exports = async (req, res) => {
         const qrCode = data.qrCodeBase64 || data.qrCode || data.qr_code ||
             `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(codigoPix || paymentId)}`;
 
-        // 🔥 SALVA EM MEMÓRIA
+        // 🔥 SALVA NA MEMÓRIA
         cobrancasDB.set(linkId, {
             paymentId: paymentId,
             valor: parseFloat(valor),
             descricao: descricao || 'Cobrança',
             cliente: cliente || 'Cliente',
-            data: new Date().toISOString(),
             status: 'pending',
             qrCode: qrCode,
-            codigoPix: codigoPix || paymentId
+            codigoPix: codigoPix || paymentId,
+            data: new Date().toISOString()
         });
 
         res.status(200).json({
