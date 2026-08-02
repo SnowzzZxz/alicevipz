@@ -16,14 +16,6 @@
             "dest": "/admin.html"
         },
         {
-            "src": "/admin.html",
-            "dest": "/admin.html"
-        },
-        {
-            "src": "/p/(.*)",
-            "dest": "/api/p/$1"
-        },
-        {
             "src": "/(.*)",
             "dest": "/index.html"
         }
